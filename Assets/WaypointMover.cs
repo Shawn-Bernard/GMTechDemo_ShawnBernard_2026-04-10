@@ -1,46 +1,82 @@
-using NUnit.Framework;
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 public class WaypointMover : MonoBehaviour
 {
-    public float moveSpeed;
-    [SerializeField] private List<Transform> waypoints = new List<Transform>();
+    private List<Transform> waypoints;
 
     Vector2 startPosition;
-    public 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        Move();
-    }
+    Vector3 targetPosition;
 
-    private void Move()
-    {
-        if (waypoints != null)
-        {
-            /*
-            float distance = Vector2.Distance(
-                startPosition,
-                waypoints[0].position);
-            waypoints[0].SetParent(null);
-            float remainingDistance = distance;
 
-            while (remainingDistance > 0)
-            {
-                transform.position = Vector2.Lerp(
-                    startPosition, waypoints[0].position, 1 - (remainingDistance / distance));
-                remainingDistance -= moveSpeed * Time.deltaTime;
-            }
-            */
-        }
-            
+    int waypointIndex;
+    public AnimationCurve curve;
 
-    }
+    public float duration = 1f;
+
+    public bool isMoving;
+
+    public float waitTime;
 
     void Awake()
     {
-        startPosition = transform.position;
+        waypoints = new List<Transform>();
+
+        GetListOfWaypoints();
+    }
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+        
+    }
+    // Update is called once per frame
+    void Update()
+    {
+        HandleWaypoint();
+    }
+
+    private void HandleWaypoint()
+    {
+        if (!isMoving && waypoints.Count > 0)
+        {
+            targetPosition = GetNextPosition();
+
+            StartCoroutine(MoveToWaypoint(transform.position, targetPosition));
+        }
+    }
+
+    private IEnumerator MoveToWaypoint(Vector3 start, Vector3 target)
+    {
+        isMoving = true;
+
+        float time = 0f;
+
+        while (time < duration)
+        {
+            time += Time.deltaTime;
+            float progress = time / duration;
+
+            progress = curve.Evaluate(progress);
+
+            transform.position = Vector3.Lerp(start, target, progress);
+
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(waitTime);
+
+        isMoving = false;
+    }
+
+    Vector3 GetNextPosition()
+    {
+        waypointIndex = (waypointIndex + 1) % waypoints.Count;
+        return waypoints[waypointIndex].position;
+    }
+
+    void GetListOfWaypoints()
+    {
         foreach (Transform child in transform)
         {
             if (child.CompareTag("Waypoint"))
@@ -51,15 +87,27 @@ public class WaypointMover : MonoBehaviour
 
         foreach (Transform child in waypoints)
         {
-            //child.SetParent(null);
+            child.SetParent(null);
         }
-
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (collision.CompareTag("Player"))
+        {
+            collision.gameObject.transform.SetParent(transform);
+        }
     }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Player"))
+        {
+            collision.gameObject.transform.SetParent(null);
+        }
+    }
+
+
 
     private void OnDrawGizmos()
     {

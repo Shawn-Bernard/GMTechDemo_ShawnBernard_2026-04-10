@@ -1,35 +1,29 @@
 using UnityEngine;
-using UnityEngine.UIElements;
 using System.Collections;
 
 public class AutoDoor : MonoBehaviour
 {
-    public float rotationAmount;
-    public float timeToOpen;
+    public Vector3 rotationAmount;
+    public float duration = 1f;
 
     public Transform doorHinge;
+    public AnimationCurve curve;
 
-    public AnimationCurve animationCurve;
+    private Quaternion closedRotation;
+    private Quaternion openRotation;
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        doorHinge = transform.GetChild(0);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+        doorHinge ??= transform.GetChild(0);    }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Player"))
         {
             Debug.Log("Player is in the door zone");
-            var boom = Vector2.Lerp(doorHinge.position, new Vector3(0, rotationAmount), timeToOpen);
-            Debug.Log(boom);
-            doorHinge.Rotate(boom);
+            StartCoroutine(RotateDoor(closedRotation, openRotation));
         }
     }
 
@@ -38,16 +32,36 @@ public class AutoDoor : MonoBehaviour
         if (collision.CompareTag("Player"))
         {
             Debug.Log("Player left the door zone");
-            doorHinge.rotation = transform.rotation;
+            StartCoroutine(RotateDoor(openRotation, closedRotation));
         }
-        
     }
 
-    /*
-    IEnumerator PlayDoorAnim()
+    void AssignRotations()
     {
-        yield return new WaitForSeconds(timeToOpen); 
-    }*/
+        closedRotation = doorHinge.rotation;
+        openRotation = Quaternion.Euler(rotationAmount);
+    }
+
+    private IEnumerator RotateDoor(Quaternion start, Quaternion target)
+    {
+
+        float time = 0f;
+
+        while (time < duration)
+        {
+            time += Time.deltaTime;
+
+            float progress = Mathf.Clamp01(time / duration);
+
+            if (curve != null)
+            {
+                progress = curve.Evaluate(progress);
+            }
+            doorHinge.rotation = Quaternion.Lerp(start, target, progress);
+
+            yield return null;
+        }
 
 
+    }
 }
