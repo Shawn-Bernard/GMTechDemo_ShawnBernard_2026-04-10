@@ -151,7 +151,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rotationAmount: {x: 0, y: -65, z: 0}
   duration: 1
-  waitTime: 0.2
   doorHinge: {fileID: 1988242775}
   curve:
     serializedVersion: 2
