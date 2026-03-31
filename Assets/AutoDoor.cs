@@ -16,7 +16,9 @@ public class AutoDoor : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        doorHinge ??= transform.GetChild(0);    }
+        doorHinge ??= transform.GetChild(0);
+        AssignRotations();
+    }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
