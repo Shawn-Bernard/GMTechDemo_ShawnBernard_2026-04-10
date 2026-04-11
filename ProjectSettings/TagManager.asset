@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 3
   tags:
   - Waypoint
+  - Enemy
+  - Checkpoint
   layers:
   - Default
   - TransparentFX
@@ -42,5 +44,13 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Tiles
+    uniqueID: 2754613291
+    locked: 0
+  - name: UI
+    uniqueID: 980727639
+    locked: 0
   m_RenderingLayers:
   - Default
+  - Tiles
+  - UI
